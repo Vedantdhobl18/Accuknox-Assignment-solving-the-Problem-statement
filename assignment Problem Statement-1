@@ -1,0 +1,283 @@
+Problem Statement 1:
+
+1. Overview
+A security product that scans container images to detect vulnerabilities, assess their severity, and help users take corrective actions.
+2. Goals & Objectives
+•	Enable users to scan container images for vulnerabilities.
+•	Display severity levels (Critical, High, Medium, Low) of vulnerabilities.
+•	Provide filtering and sorting options for efficient identification.
+•	Offer remediation guidance for fixing critical vulnerabilities.
+•	Allow bulk scanning and easy navigation through thousands of images.
+3. Key Features
+3.1 Image Scanning
+•	Scan container images stored in repositories.
+•	Generate a report displaying detected vulnerabilities.
+•	Categorize vulnerabilities by severity (Critical, High, Medium, Low).
+3.2 Dashboard
+•	Provide an overview of scanned images and their security status.
+•	Display total images scanned, number of vulnerable images, and severity breakdown.
+•	Include graphs and charts for a quick visual representation.
+3.3 Filtering & Sorting
+•	Filter images based on severity, repository, date, and vulnerability type.
+•	Sort images by vulnerability count, severity, or scan date.
+3.4 Detailed View of Vulnerabilities
+•	Show detailed vulnerability descriptions, CVE (Common Vulnerabilities and Exposures) references, and affected dependencies.
+•	Display remediation steps and patch recommendations.
+3.5 Remediation Suggestions
+•	Provide actionable recommendations for fixing vulnerabilities.
+•	Allow users to mark vulnerabilities as resolved or ignored.
+•	Offer integration with patching tools.
+3.6 Bulk Operations
+•	Enable bulk scanning of container images.
+•	Allow batch actions such as marking vulnerabilities as addressed.
+3.7 Notifications & Alerts
+•	Send alerts for critical vulnerabilities.
+•	Allow users to configure notifications via email or dashboard.
+4. User Roles & Permissions
+•	Admin: Full access to scanning, remediation, and user management.
+•	Security Analyst: Can scan images, view reports, and take remediation actions.
+•	Developer: Can view vulnerabilities and remediation steps.
+5. Technical Requirements
+•	Should support integration with container registries (Docker Hub, AWS ECR, Google Container Registry, etc.).
+•	API for programmatic access to scan results.
+•	Secure authentication and role-based access control.
+6. Wireframes
+6.1 Dashboard
+•	Overview of all container images.
+•	Pie chart for severity distribution.
+•	List of most recent scans with vulnerability counts.
+6.2 Image Scan Results Page
+•	List of scanned container images with severity indicators.
+•	Search and filter options.
+6.3 Detailed Vulnerability Report
+•	Vulnerability description, CVE reference, affected package, and remediation steps.
+•	Mark as resolved/ignored.
+6.4 Settings Page
+•	Configure notification preferences.
+•	Manage integrations with registries.
+7. Development Action Items
+•	Implement container image scanning integration.
+•	Develop a dashboard UI with filtering and sorting capabilities.
+•	Set up a notification system for critical vulnerabilities.
+•	Integrate CVE databases for vulnerability information.
+•	Create an API for programmatic access.
+8. Conclusion
+This product will provide an intuitive and efficient way for users to identify and remediate vulnerabilities in container images, ensuring better security posture and compliance.
+
+Problem Statement 2:
+1. Overview
+The goal is to set up a local Kubernetes cluster, scan it for security vulnerabilities using Kubescape (or another security tool), and generate a JSON file containing the findings.
+2. Setting Up a Local Kubernetes Cluster
+A local Kubernetes cluster is required to run and scan workloads. You can choose from the following lightweight Kubernetes distributions:
+•	Minikube (Most commonly used for development)
+•	K3s (Lightweight Kubernetes for IoT & edge computing)
+•	Kind (Kubernetes-in-Docker, useful for testing)
+Installing Minikube (Recommended)
+Minikube is easy to install and supports multiple environments.
+•	Step 1: Install Minikube :-   “choco install minikube”.
+•	Step 2: Start Minikube :- “minikube start”.
+•	Step 3: Verify Installation :-  kubectl get nodes.
+3. Installing a Kubernetes Security Scanner
+We will use Kubescape to scan Kubernetes clusters. Other alternatives include:
+•	Trivy (Container and Kubernetes security scanner)
+•	Kube-Bench (CIS Kubernetes Benchmark compliance checker)
+•	Kube-Hunter (Kubernetes penetration testing tool)
+	Installing Kubescape :
+curl -s https://raw.githubusercontent.com/kubescape/kubescape/master/install.sh | bash
+	Verify installation:
+kubescape version
+4. Running the Security Scan
+Once Kubescape is installed, scan the local Kubernetes cluster.
+Run a Full Cluster Security Scan
+“kubescape scan cluster --format json --output results.json”
+This command performs a deep security scan and outputs findings in results.json.
+Alternative: Scan YAML Manifests
+If you want to scan Kubernetes manifest files (YAML):
+“kubescape scan . --format json --output results.json”
+Alternative: Use Trivy for Scanning
+“trivy k8s --report all --format json -o results.json cluster”
+
+5. Analyzing the JSON Findings
+Once the scan is complete, open results.json to inspect security findings.
+Example JSON Output (results.json)
+json
+{
+  "apiVersion": "v1",
+  "kind": "KubescapeReport",
+  "items": [
+    {
+      "name": "HostNetworkUsage",
+      "severity": "HIGH",
+      "description": "Containers using hostNetwork pose a security risk.",
+      "resource": "pod/network-critical-app",
+      "namespace": "default",
+      "remediation": "Avoid using hostNetwork unless necessary."
+    },
+    {
+      "name": "PrivilegeEscalation",
+      "severity": "CRITICAL",
+      "description": "A container is running as root.",
+      "resource": "pod/admin-pod",
+      "namespace": "kube-system",
+      "remediation": "Run the container with a non-root user."
+    }
+  ]
+}
+Explanation of Findings
+•	name: Security risk detected.
+•	severity: Risk level (Critical, High, Medium, Low).
+•	description: Explanation of the vulnerability.
+•	resource: The affected Kubernetes object.
+•	namespace: The namespace in which the issue was found.
+•	remediation: Recommended fix.
+6. Deliverables
+Once the scan is complete, submit the results.json file.
+Final Steps
+1.	Ensure the JSON file is well-structured.
+2.	Remove any unnecessary data before sharing.
+3.	Compress the JSON file (optional) if it's large.
+Example: Sending the File:
+“gzip results.json”
+
+You can then send results.json.gz as a deliverable
+
+Problem Statement 3:
+Solution: Deploying a GoLang Web Application with Kubernetes
+This solution consists of three main steps:
+✅ Step 1: Create a GoLang program that displays the current date and time and push it to DockerHub.
+✅ Step 2: Deploy the container using Kubernetes with two replicas using a declarative approach.
+✅ Step 3: Expose the application to the internet.
+
+Step 1: Create a GoLang Web Application
+The application will be a simple web server displaying the current date and time.
+1.1 Create the Go Program
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"time"
+)
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	fmt.Fprintf(w, "Current Date & Time: %s", currentTime)
+}
+
+func main() {
+	http.HandleFunc("/", handler)
+	fmt.Println("Starting server on port 8080...")
+	http.ListenAndServe(":8080", nil)
+}
+1.2 Initialize a Go Module
+Run the following command in the project directory:
+bash
+go mod init my-time-app
+________________________________________
+Step 2: Containerize the Go Application
+2.1 Create a Dockerfile
+Create a Dockerfile in the same directory:
+dockerfile
+# Use an official lightweight Go image
+FROM golang:1.20 as builder
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy Go files to the container
+
+# Build the Go application
+RUN go build -o time-app
+
+# Use a minimal base image
+FROM alpine:latest
+WORKDIR /root/
+
+# Copy the binary from the builder stage
+COPY --from=builder /app/time-app .
+
+# Expose the application port
+EXPOSE 8080
+
+# Run the application
+CMD ["./time-app"]
+2.2 Build the Docker Image
+Bash
+docker build -t myusername/time-app:latest .
+2.3 Run the Container Locally
+bash
+docker run -p 8080:8080 myusername/time-app
+Check the output by visiting:
+👉 http://localhost:8080
+2.4 Push the Image to DockerHub
+Login to DockerHub:
+Bash
+docker login
+Tag and push the image:
+bash
+docker tag myusername/time-app myusername/time-app:latest
+docker push myusername/time-app:latest
+________________________________________
+Step 3: Deploy to Kubernetes
+3.1 Create Kubernetes Deployment
+Create a file deployment.yaml:
+yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: time-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: time-app
+  template:
+    metadata:
+      labels:
+        app: time-app
+    spec:
+      containers:
+      - name: time-app
+        image: myusername/time-app:latest
+        ports:
+        - containerPort: 8080
+3.2 Create Kubernetes Service
+Create a file service.yaml:
+yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: time-app-service
+spec:
+  selector:
+    app: time-app
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+________________________________________
+Step 4: Deploy the Application
+4.1 Apply Kubernetes Configuration
+Run the following commands to deploy:
+bash
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+4.2 Verify Deployment
+Check if pods are running:
+bash
+kubectl get pods
+Check if the service is exposed:
+bash
+kubectl get svc
+The EXTERNAL-IP in the output is the public URL.
+________________________________________
+Step 5: Expose the Application to the Internet
+If using Minikube, you need to expose the service manually:
+bash
+minikube service time-app-service
+For Cloud Platforms (GCP, AWS, Azure), the LoadBalancer service will automatically provide a public IP.
+
+
+
+

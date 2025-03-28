@@ -1,0 +1,77 @@
+Problem Statement 2:
+1. Overview
+The goal is to set up a local Kubernetes cluster, scan it for security vulnerabilities using Kubescape (or another security tool), and generate a JSON file containing the findings.
+2. Setting Up a Local Kubernetes Cluster
+A local Kubernetes cluster is required to run and scan workloads. You can choose from the following lightweight Kubernetes distributions:
+•	Minikube (Most commonly used for development)
+•	K3s (Lightweight Kubernetes for IoT & edge computing)
+•	Kind (Kubernetes-in-Docker, useful for testing)
+Installing Minikube (Recommended)
+Minikube is easy to install and supports multiple environments.
+•	Step 1: Install Minikube :-   “choco install minikube”.
+•	Step 2: Start Minikube :- “minikube start”.
+•	Step 3: Verify Installation :-  kubectl get nodes.
+3. Installing a Kubernetes Security Scanner
+We will use Kubescape to scan Kubernetes clusters. Other alternatives include:
+•	Trivy (Container and Kubernetes security scanner)
+•	Kube-Bench (CIS Kubernetes Benchmark compliance checker)
+•	Kube-Hunter (Kubernetes penetration testing tool)
+	Installing Kubescape :
+curl -s https://raw.githubusercontent.com/kubescape/kubescape/master/install.sh | bash
+	Verify installation:
+kubescape version
+4. Running the Security Scan
+Once Kubescape is installed, scan the local Kubernetes cluster.
+Run a Full Cluster Security Scan
+“kubescape scan cluster --format json --output results.json”
+This command performs a deep security scan and outputs findings in results.json.
+Alternative: Scan YAML Manifests
+If you want to scan Kubernetes manifest files (YAML):
+“kubescape scan . --format json --output results.json”
+Alternative: Use Trivy for Scanning
+“trivy k8s --report all --format json -o results.json cluster”
+
+5. Analyzing the JSON Findings
+Once the scan is complete, open results.json to inspect security findings.
+Example JSON Output (results.json)
+json
+{
+  "apiVersion": "v1",
+  "kind": "KubescapeReport",
+  "items": [
+    {
+      "name": "HostNetworkUsage",
+      "severity": "HIGH",
+      "description": "Containers using hostNetwork pose a security risk.",
+      "resource": "pod/network-critical-app",
+      "namespace": "default",
+      "remediation": "Avoid using hostNetwork unless necessary."
+    },
+    {
+      "name": "PrivilegeEscalation",
+      "severity": "CRITICAL",
+      "description": "A container is running as root.",
+      "resource": "pod/admin-pod",
+      "namespace": "kube-system",
+      "remediation": "Run the container with a non-root user."
+    }
+  ]
+}
+Explanation of Findings
+•	name: Security risk detected.
+•	severity: Risk level (Critical, High, Medium, Low).
+•	description: Explanation of the vulnerability.
+•	resource: The affected Kubernetes object.
+•	namespace: The namespace in which the issue was found.
+•	remediation: Recommended fix.
+6. Deliverables
+Once the scan is complete, submit the results.json file.
+Final Steps
+1.	Ensure the JSON file is well-structured.
+2.	Remove any unnecessary data before sharing.
+3.	Compress the JSON file (optional) if it's large.
+Example: Sending the File:
+“gzip results.json”
+
+You can then send results.json.gz as a deliverable
+

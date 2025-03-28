@@ -1,0 +1,140 @@
+Problem Statement 3:
+Solution: Deploying a GoLang Web Application with Kubernetes
+This solution consists of three main steps:
+✅ Step 1: Create a GoLang program that displays the current date and time and push it to DockerHub.
+✅ Step 2: Deploy the container using Kubernetes with two replicas using a declarative approach.
+✅ Step 3: Expose the application to the internet.
+
+Step 1: Create a GoLang Web Application
+The application will be a simple web server displaying the current date and time.
+1.1 Create the Go Program
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"time"
+)
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	fmt.Fprintf(w, "Current Date & Time: %s", currentTime)
+}
+
+func main() {
+	http.HandleFunc("/", handler)
+	fmt.Println("Starting server on port 8080...")
+	http.ListenAndServe(":8080", nil)
+}
+1.2 Initialize a Go Module
+Run the following command in the project directory:
+bash
+go mod init my-time-app
+________________________________________
+Step 2: Containerize the Go Application
+2.1 Create a Dockerfile
+Create a Dockerfile in the same directory:
+dockerfile
+# Use an official lightweight Go image
+FROM golang:1.20 as builder
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy Go files to the container
+
+# Build the Go application
+RUN go build -o time-app
+
+# Use a minimal base image
+FROM alpine:latest
+WORKDIR /root/
+
+# Copy the binary from the builder stage
+COPY --from=builder /app/time-app .
+
+# Expose the application port
+EXPOSE 8080
+
+# Run the application
+CMD ["./time-app"]
+2.2 Build the Docker Image
+Bash
+docker build -t myusername/time-app:latest .
+2.3 Run the Container Locally
+bash
+docker run -p 8080:8080 myusername/time-app
+Check the output by visiting:
+👉 http://localhost:8080
+2.4 Push the Image to DockerHub
+Login to DockerHub:
+Bash
+docker login
+Tag and push the image:
+bash
+docker tag myusername/time-app myusername/time-app:latest
+docker push myusername/time-app:latest
+________________________________________
+Step 3: Deploy to Kubernetes
+3.1 Create Kubernetes Deployment
+Create a file deployment.yaml:
+yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: time-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: time-app
+  template:
+    metadata:
+      labels:
+        app: time-app
+    spec:
+      containers:
+      - name: time-app
+        image: myusername/time-app:latest
+        ports:
+        - containerPort: 8080
+3.2 Create Kubernetes Service
+Create a file service.yaml:
+yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: time-app-service
+spec:
+  selector:
+    app: time-app
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+________________________________________
+Step 4: Deploy the Application
+4.1 Apply Kubernetes Configuration
+Run the following commands to deploy:
+bash
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+4.2 Verify Deployment
+Check if pods are running:
+bash
+kubectl get pods
+Check if the service is exposed:
+bash
+kubectl get svc
+The EXTERNAL-IP in the output is the public URL.
+________________________________________
+Step 5: Expose the Application to the Internet
+If using Minikube, you need to expose the service manually:
+bash
+minikube service time-app-service
+For Cloud Platforms (GCP, AWS, Azure), the LoadBalancer service will automatically provide a public IP.
+
+
+
+
